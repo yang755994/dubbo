@@ -43,12 +43,13 @@ public class SpringContainer implements Container {
 	}
 
 	public void start() {
+        // 获取spring的配置信息路径：META-INF.spring/dubbo-demo-provider.xml
         String configPath = ConfigUtils.getProperty(SPRING_CONFIG);
         if (configPath == null || configPath.length() == 0) {
             configPath = DEFAULT_SPRING_CONFIG;
         }
         context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"));
-        context.start();
+        context.start();  // 启动spring容器
     }
 
     public void stop() {

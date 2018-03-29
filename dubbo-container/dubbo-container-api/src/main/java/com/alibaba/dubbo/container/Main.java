@@ -15,17 +15,17 @@
  */
 package com.alibaba.dubbo.container;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ConfigUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Main. (API, Static, ThreadSafe)
@@ -47,19 +47,21 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (args == null || args.length == 0) {
+                // dubbo.contains解析：log4j，spring
                 String config = ConfigUtils.getProperty(CONTAINER_KEY, loader.getDefaultExtensionName());
                 args = Constants.COMMA_SPLIT_PATTERN.split(config);
             }
             
             final List<Container> containers = new ArrayList<Container>();
             for (int i = 0; i < args.length; i ++) {
+                // 获取到对应的container，放入containers集合中
                 containers.add(loader.getExtension(args[i]));
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo serivce.");
             
             if ("true".equals(System.getProperty(SHUTDOWN_HOOK_KEY))) {
 	            Runtime.getRuntime().addShutdownHook(new Thread() {
-	                public void run() {
+	                public void run() {   // 钩子函数
 	                    for (Container container : containers) {
 	                        try {
 	                            container.stop();

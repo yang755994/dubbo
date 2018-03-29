@@ -300,7 +300,7 @@ public class ExtensionLoader<T> {
      * @return
      */
 	@SuppressWarnings("unchecked")
-	public T getExtension(String name) {
+	public T getExtension(String name) {  // 根据配置获取对应的类：比如dubbo.container=spring,则获取到对应的类SpringContainer
 		if (name == null || name.length() == 0)
 		    throw new IllegalArgumentException("Extension name == null");
 		if ("true".equals(name)) {
@@ -453,6 +453,7 @@ public class ExtensionLoader<T> {
                     if (instance == null) {
                         try {
                             instance = createAdaptiveExtension();
+                            // 将自适应工厂适应类放入map缓存:SpiExtensionFactory,SpringExtensionFactory
                             cachedAdaptiveInstance.set(instance);
                         } catch (Throwable t) {
                             createAdaptiveInstanceError = t;
@@ -496,7 +497,7 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
-        Class<?> clazz = getExtensionClasses().get(name);
+        Class<?> clazz = getExtensionClasses().get(name);   // 获取class
         if (clazz == null) {
             throw findException(name);
         }

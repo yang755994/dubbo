@@ -15,6 +15,11 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -26,11 +31,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 
 /**
  * @author ding.lid
@@ -140,13 +140,15 @@ public class ConfigUtils {
     }
 	
     private static volatile Properties PROPERTIES;
-    
+
+	// 双重校验：单例模式获取properties
     public static Properties getProperties() {
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
                 if (PROPERTIES == null) {
                     String path = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
                     if (path == null || path.length() == 0) {
+                        // 获取dubbo配置信息
                         path = System.getenv(Constants.DUBBO_PROPERTIES_KEY);
                         if (path == null || path.length() == 0) {
                             path = Constants.DEFAULT_DUBBO_PROPERTIES;
