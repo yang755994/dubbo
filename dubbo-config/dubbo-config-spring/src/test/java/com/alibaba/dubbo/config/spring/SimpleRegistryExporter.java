@@ -33,9 +33,15 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
  * @author william.liangf
  */
 public class SimpleRegistryExporter {
-    
+    // 我们可以理解为一种工厂模式，这种实现方式的优点是可扩展性强，想要扩展实现，
+    // 只需要在 classpath 下增加个文件就可以了，代码零侵入。
+    // 另外，像上面的 Adaptive 实现，可以做到调用时动态决定调用哪个实现，
+    // 但是由于这种实现采用了动态代理，会造成代码调试比较麻烦，需要分析出实际调用的实现类
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    
+    // 我们可以理解为一种工厂模式，这种实现方式的优点是可扩展性强，想要扩展实现，
+    // 只需要在 classpath 下增加个文件就可以了，代码零侵入。
+    // 另外，像上面的 Adaptive 实现，可以做到调用时动态决定调用哪个实现，
+    // 但是由于这种实现采用了动态代理，会造成代码调试比较麻烦，需要分析出实际调用的实现类
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     
     public synchronized static Exporter<RegistryService> exportIfAbsent(int port) {

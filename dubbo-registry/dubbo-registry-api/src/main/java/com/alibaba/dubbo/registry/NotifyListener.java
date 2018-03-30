@@ -15,9 +15,9 @@
  */
 package com.alibaba.dubbo.registry;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.URL;
+
+import java.util.List;
 
 /**
  * NotifyListener. (API, Prototype, ThreadSafe)
@@ -25,6 +25,12 @@ import com.alibaba.dubbo.common.URL;
  * @see com.alibaba.dubbo.registry.RegistryService#subscribe(URL, NotifyListener)
  * @author william.liangf
  */
+// 当一个对象被修改时，则会自动通知它的依赖对象
+// 在dubbo provider服务启动时候要向注册中心注册自己的服务，
+// 在dubbo consumer向注册中心订阅服务时则是一种观察者模式，
+// 他开启了一个listener，注册中心会每 5 秒定时检查是否有服务更新，
+// 如果有更新，向该服务的提供者发送一个 notify 消息， provider 接受到 notify 消息后，
+// 即运行 NotifyListener 的 notify 方法，执行监听器方法。
 public interface NotifyListener {
 
     /**
@@ -39,6 +45,6 @@ public interface NotifyListener {
      * 
      * @param urls 已注册信息列表，总不为空，含义同{@link com.alibaba.dubbo.registry.RegistryService#lookup(URL)}的返回值。
      */
-    void notify(List<URL> urls);
+    void notify(List<URL> urls);  // 观察者模式
 
 }

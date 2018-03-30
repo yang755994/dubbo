@@ -15,13 +15,13 @@
  */
 package com.alibaba.dubbo.common.extension;
 
+import com.alibaba.dubbo.common.URL;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import com.alibaba.dubbo.common.URL;
 
 /**
  * 在{@link ExtensionLoader}生成Extension的Adaptive Instance时，为{@link ExtensionLoader}提供信息。

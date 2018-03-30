@@ -70,7 +70,8 @@ public class ExtensionLoader<T> {
     private static final String DUBBO_INTERNAL_DIRECTORY = DUBBO_DIRECTORY + "internal/";
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
-    
+
+    // ExtensionLoader中含有一个静态属性，用于缓存所有的扩展加载实例，这里加载Protocol.class，就以Protocol.class为key，创建的ExtensionLoader为value存储到上述EXTENSION_LOADERS中
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<Class<?>, ExtensionLoader<?>>();
 
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<Class<?>, Object>();
@@ -91,6 +92,7 @@ public class ExtensionLoader<T> {
 
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
 
+    // 解析Protocol上的Extension注解的name,存至String cachedDefaultName属性中，作为默认的实现
     private String cachedDefaultName;
 
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
@@ -739,12 +741,25 @@ public class ExtensionLoader<T> {
         com.alibaba.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
         return compiler.compile(code, classLoader);
     }
-    
+
+    // 在代理模式（Proxy Pattern）中，一个类代表另一个类的功能
+    // Dubbo 扩展 jdk spi 的类 ExtensionLoader 的 Adaptive 实现是典型的动态代理实现。
+    // Dubbo需要灵活地控制实现类，即在调用阶段动态地根据参数决定调用哪个实现类，
+    // 所以采用先生成代理类的方法，能够做到灵活的调用。
+    // 生成代理类的代码是 ExtensionLoader 的createAdaptiveExtensionClassCode 方法。
+    // 代理类的主要逻辑是，获取 URL 参数中指定参数的值作为获取实现类的key
+
+    /**
+     * 根据URL传参获取指定实现类的key
+     * @return
+     */
     private String createAdaptiveExtensionClassCode() {
         StringBuilder codeBuidler = new StringBuilder();
+        // 反射获取方法集合
         Method[] methods = type.getMethods();
         boolean hasAdaptiveAnnotation = false;
         for(Method m : methods) {
+            // 循环判断每个方法是否使用Adaptive注解
             if(m.isAnnotationPresent(Adaptive.class)) {
                 hasAdaptiveAnnotation = true;
                 break;
@@ -753,16 +768,20 @@ public class ExtensionLoader<T> {
         // 完全没有Adaptive方法，则不需要生成Adaptive类
         if(! hasAdaptiveAnnotation)
             throw new IllegalStateException("No adaptive method on extension " + type.getName() + ", refuse to create the adaptive class!");
-        
+
+        // 利用字节码技术：拼接Class字节码
         codeBuidler.append("package " + type.getPackage().getName() + ";");
         codeBuidler.append("\nimport " + ExtensionLoader.class.getName() + ";");
         codeBuidler.append("\npublic class " + type.getSimpleName() + "$Adpative" + " implements " + type.getCanonicalName() + " {");
         
         for (Method method : methods) {
+            // 获取方法的返回值
             Class<?> rt = method.getReturnType();
+            // 获取方法参数类型
             Class<?>[] pts = method.getParameterTypes();
+            // 获取方法异常类型
             Class<?>[] ets = method.getExceptionTypes();
-
+            // 获取方法上使用注解Adaptive的注解信息
             Adaptive adaptiveAnnotation = method.getAnnotation(Adaptive.class);
             StringBuilder code = new StringBuilder(512);
             if (adaptiveAnnotation == null) {
@@ -771,7 +790,9 @@ public class ExtensionLoader<T> {
                         .append(type.getName()).append(" is not adaptive method!\");");
             } else {
                 int urlTypeIndex = -1;
+                // 循环方法参数类型
                 for (int i = 0; i < pts.length; ++i) {
+                    // 方法参数类型是否为URL类型
                     if (pts[i].equals(URL.class)) {
                         urlTypeIndex = i;
                         break;

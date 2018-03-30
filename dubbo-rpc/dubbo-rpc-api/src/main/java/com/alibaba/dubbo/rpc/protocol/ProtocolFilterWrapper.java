@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol;
 
-import java.util.List;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
@@ -27,6 +25,8 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Protocol;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
+
+import java.util.List;
 
 /**
  * ListenerProtocol
@@ -52,6 +52,7 @@ public class ProtocolFilterWrapper implements Protocol {
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
+        // 责任链模式
         return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER));
     }
 
