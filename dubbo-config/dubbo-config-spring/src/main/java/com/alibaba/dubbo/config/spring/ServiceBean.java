@@ -15,11 +15,15 @@
  */
 package com.alibaba.dubbo.config.spring;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ModuleConfig;
+import com.alibaba.dubbo.config.MonitorConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ProviderConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.ServiceConfig;
+import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -31,15 +35,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.ModuleConfig;
-import com.alibaba.dubbo.config.MonitorConfig;
-import com.alibaba.dubbo.config.ProtocolConfig;
-import com.alibaba.dubbo.config.ProviderConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
-import com.alibaba.dubbo.config.ServiceConfig;
-import com.alibaba.dubbo.config.annotation.Service;
-import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ServiceFactoryBean
@@ -47,6 +46,12 @@ import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
  * @author william.liangf
  * @export
  */
+// ServiceBean继承了ServiceConfig，并且实现了一些列的Spring接口。
+// 实现了InitializingBean，所以在bean的创建过程中，每个接口配置<dubbo:service ...>
+// 被解析成ServiceBean实例， 其在初始化后，会调用afterPropertiesSet()方法完成
+// 整个dubbo配置的加载过程；实现了ApplicationListener，
+// 所以会在整个Spring容器加载完成后接收到消息，完成onApplicationEvent()方法的调用，
+// 该方法就会将该ServiceBean配置的接口等服务进行发布和注册
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener, BeanNameAware {
 
 	private static final long serialVersionUID = 213195494150089726L;
@@ -100,6 +105,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         this.beanName = name;
     }
 
+    // Spring容器加载完毕之后会调用onApplicationEvent方法
     public void onApplicationEvent(ApplicationEvent event) {
         if (ContextRefreshedEvent.class.getName().equals(event.getClass().getName())) {
         	if (isDelay() && ! isExported() && ! isUnexported()) {

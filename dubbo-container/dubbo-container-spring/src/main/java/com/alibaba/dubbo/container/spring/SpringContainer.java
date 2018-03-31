@@ -42,6 +42,9 @@ public class SpringContainer implements Container {
 		return context;
 	}
 
+	// 通过ClassPathXmlApplicationContext来启动和停止的。
+    // Spring在解析xml文件时遇到dubbo名称空间时，会回调DubboNamespaceHandler，对所有dubbo的标签，
+    // 都统一用DubboBeanDefinitionParser进行解析，基于一对一属性映射，将XML标签解析为Bean对象
 	public void start() {
         // 获取spring的配置信息路径：META-INF.spring/dubbo-demo-provider.xml
         String configPath = ConfigUtils.getProperty(SPRING_CONFIG);

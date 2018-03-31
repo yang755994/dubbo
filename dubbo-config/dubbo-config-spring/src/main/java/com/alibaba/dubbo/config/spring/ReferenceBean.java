@@ -15,17 +15,6 @@
  */
 package com.alibaba.dubbo.config.spring;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ConsumerConfig;
 import com.alibaba.dubbo.config.ModuleConfig;
@@ -35,6 +24,16 @@ import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 import com.alibaba.dubbo.config.support.Parameter;
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ReferenceFactoryBean
@@ -42,6 +41,11 @@ import com.alibaba.dubbo.config.support.Parameter;
  * @author william.liangf
  * @export
  */
+// ReferenceBean继承了ReferenceConfig，原理对应ServiceBean和ServiceConfig。
+// 不同之处在于，服务提供方ServiceBean需要在Spring启动的时候就提供服务，所以是通过onApplicationEvent在容器初始化完成之后立即就发布和注册了服务；
+// 但是服务消费方ReferenceBean是在程序需要的时候才会去执行，如果通过配置在Spring启动的过程中完成初始化是并不是合适的做法，
+// 而是在应用程序需要用到的时候，再去创建，所以ReferenceBean实现了FactoryBean，实现了接口方法getObject()，
+// 那么在spring容器getBean()方法获取对象实例其实调用的是ReferenceBean的getObject()方法完成消费地址的注册以及服务的订阅
 public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
 
 	private static final long serialVersionUID = 213195494150089726L;
